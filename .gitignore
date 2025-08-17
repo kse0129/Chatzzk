@@ -1,0 +1,46 @@
+# Byte-compiled files
+*.py[cod]
+__pycache__/
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# Test and coverage reports
+.coverage
+*.cover
+nosetests.xml
+coverage.xml
+*.log
+
+# MySQL / SQLite files
+*.sqlite3
+*.db
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Pycharm specific files
+.idea/
+
+# .env files to store sensitive information like API keys or passwords
+.env
+
+# key json
+chatzzk-private-key.json
+cookies.json
