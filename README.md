@@ -1,6 +1,6 @@
 # Chatzzk
 
-네이버 치지직(Chzzk) 채팅을 수집하여 Google Cloud Pub/Sub로 퍼블리시하고, PostgreSQL에 저장하는 수집 파이프라인
+네이버 치지직(Chzzk) 채팅을 Google Cloud Pub/Sub을 이용하여 PostgreSQL에 저장하고, Jupyter Notebook을 활용해 스트리머별 채팅 데이터를 **분석**하는 프로젝트
 
 
 ## 주요 기능
