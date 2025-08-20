@@ -1,7 +1,7 @@
 import streamlit as st
 import psycopg2
 import pandas as pd
-import settings
+from config.settings import *
 
 @st.cache_data
 def load_view(view_name: str):
