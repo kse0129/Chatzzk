@@ -58,8 +58,9 @@ fname = f"{selected_streamer}_wordcloud.png"
 fpath = os.path.join(wordcloud_dir, fname)
 
 if os.path.exists(fpath):
-    img = Image.open(fpath)
-    st.image(img, caption=f"{selected_streamer} WordCloud", use_container_width=True)
+    with Image.open(fpath) as img:
+        img = Image.open(fpath)
+        st.image(img, caption=f"{selected_streamer} WordCloud", use_container_width=True)
 else:
     st.warning("Don't have wordcloud png")
 
