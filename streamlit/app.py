@@ -4,21 +4,18 @@ import pandas as pd
 from PIL import Image
 from config.settings import *
 
-@st.cache_resource
-def get_connection():
-    return psycopg2.connect(
+
+def load_view(view_name: str):
+    conn = psycopg2.connect(
         host=PG_HOST,
         port=PG_PORT,
         dbname=PG_DB,
         user=PG_USER,
         password=PG_PASS,
     )
-
-@st.cache_data(ttl=300)
-def load_view(view_name: str):
-    conn = get_connection()
     query = f"SELECT * FROM {view_name};"
     df = pd.read_sql(query, conn)
+    conn.close()
     return df
 
 st.title("Chzzk 채팅 데이터 분석 대시보드")
