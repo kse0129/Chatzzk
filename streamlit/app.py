@@ -6,11 +6,11 @@ from config.settings import *
 @st.cache_data
 def load_view(view_name: str):
     conn = psycopg2.connect(
-        host=settings.PG_HOST,
-        port=settings.PG_PORT,
-        dbname=settings.PG_DB,
-        user=settings.PG_USER,
-        password=settings.PG_PASS,
+        host=PG_HOST,
+        port=PG_PORT,
+        dbname=PG_DB,
+        user=PG_USER,
+        password=PG_PASS,
     )
     query = f"SELECT * FROM {view_name};"
     df = pd.read_sql(query, conn)
