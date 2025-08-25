@@ -4,7 +4,7 @@ import pandas as pd
 from PIL import Image
 from config.settings import *
 
-
+@st.cache_data
 def load_view(view_name: str):
     conn = psycopg2.connect(
         host=PG_HOST,
@@ -55,9 +55,9 @@ fname = f"{selected_streamer}_wordcloud.png"
 fpath = os.path.join(wordcloud_dir, fname)
 
 if os.path.exists(fpath):
-    with Image.open(fpath) as img:
-        img = Image.open(fpath)
-        st.image(img, caption=f"{selected_streamer} WordCloud", use_container_width=True)
+    img = Image.open(fpath)
+    st.image(img, caption=f"{selected_streamer} WordCloud", use_container_width=True)
+    img.close
 else:
     st.warning("Don't have wordcloud png")
 
@@ -68,7 +68,6 @@ st.bar_chart(hourly)
 
 # 채팅 참여 집중도
 st.subheader("참여 집중도 (Top 10 유저 vs 나머지)")
-df_activity = load_view("user_activity_per_streamer")
 df_sel = df_activity[df_activity["streamer_id"] == selected_streamer]
 
 plot_data = []
