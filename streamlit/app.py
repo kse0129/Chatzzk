@@ -6,7 +6,7 @@ from config.settings import *
 import gc
 import json
 
-with open("../config/streamer_list.json", "r", encoding="utf-8") as f:
+with open("config/streamer_list.json", "r", encoding="utf-8") as f:
     streamer_list = json.load(f)
 
 streamer_map = {s["id"]: s["name"] for s in streamer_list}
