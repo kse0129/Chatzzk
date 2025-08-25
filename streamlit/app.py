@@ -47,7 +47,7 @@ if mode == "전체 스트리머":
     unique_per_streamer = unique_users.groupby("streamer_id")["unique_users"].sum()
     st.bar_chart(unique_per_streamer)
 
-elif if mode == "스트리머별":
+elif mode == "스트리머별":
     st.subheader("스트리머별")
     # 스트리머 선택
     streamers = chat_counts["streamer_id"].unique()
