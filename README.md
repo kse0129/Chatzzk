@@ -25,6 +25,13 @@ collect/
 notebook/
 ├─ eda.ipynb            # 데이터 분석 파일
 └─ stopwords.txt        # 불용어 사전
+
+streamlit/
+├─ config/
+│ ├─ settings.py        # 환경 설정(경로, Pub/Sub, DB)
+│ ├─ sql.py             # DDL/INSERT SQL
+│ └─ streamer_list.json # 수집 대상 스트리머 목록
+└─ app.py               # streamlit 웹 서버
 ```
 
 ## 실행
