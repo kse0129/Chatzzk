@@ -3,6 +3,7 @@ import psycopg2
 import pandas as pd
 from PIL import Image
 from config.settings import *
+import gc
 
 @st.cache_data
 def load_view(view_name: str):
@@ -89,3 +90,6 @@ st.bar_chart(df_plot.set_index("chat_date")[["top10", "others"]])
 st.subheader("채팅 길이 분포")
 length_dist = df_length.groupby("msg_length")["msg_count"].sum()
 st.bar_chart(length_dist)
+
+st.session_state.clear()
+gc.collect()
