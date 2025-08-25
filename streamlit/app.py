@@ -36,14 +36,17 @@ if mode == "전체 스트리머":
     st.subheader("전체 스트리머")
 
     # 일별 전체 채팅 수
+    st.subheader("일별 전체 채팅 수")
     daily_total = chat_counts.groupby("chat_date")["msg_count"].sum()
     st.line_chart(daily_total)
 
-    # 스트리머별 채팅 비율
+    # 스트리머별 채팅 수
+    st.subheader("스트리머별 채팅 수")
     total_per_streamer = chat_counts.groupby("streamer_id")["msg_count"].sum()
     st.bar_chart(total_per_streamer)
 
     # 스트리머별 고유 유저 수
+    st.subheader("스트리머별 채팅 시청자 수")
     unique_per_streamer = unique_users.groupby("streamer_id")["unique_users"].sum()
     st.bar_chart(unique_per_streamer)
 
