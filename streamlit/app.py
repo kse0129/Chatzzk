@@ -4,6 +4,16 @@ import pandas as pd
 from PIL import Image
 from config.settings import *
 import gc
+import json
+
+with open("../config/streamer_list.json", "r", encoding="utf-8") as f:
+    streamer_list = json.load(f)
+
+streamer_map = {s["id"]: s["name"] for s in streamer_list}
+
+def map_id2name(table):
+    table.index = table.index.map(lambda x: streamer_map.get(x, x))
+    return table
 
 @st.cache_data
 def load_view(view_name: str):
@@ -43,12 +53,12 @@ if mode == "전체 스트리머":
     # 스트리머별 채팅 수
     st.subheader("스트리머별 채팅 수")
     total_per_streamer = chat_counts.groupby("streamer_id")["msg_count"].sum()
-    st.bar_chart(total_per_streamer)
+    st.bar_chart(map_id2name(total_per_streamer))
 
     # 스트리머별 고유 유저 수
     st.subheader("스트리머별 채팅 시청자 수")
     unique_per_streamer = unique_users.groupby("streamer_id")["unique_users"].sum()
-    st.bar_chart(unique_per_streamer)
+    st.bar_chart(map_id2name(unique_per_streamer))
 
     # 스트리머별 유사도
     st.subheader("스트리머별 유사도")
@@ -57,7 +67,7 @@ if mode == "전체 스트리머":
     fpath = os.path.join(wordcloud_dir, fname)
     if os.path.exists(fpath):
         img = Image.open(fpath)
-        st.image(img, caption=f"similarity_map", use_container_width=True)
+        st.image(img, use_container_width=True)
         img.close()
     else:
         st.warning("Don't have similarity_map png")
@@ -69,7 +79,7 @@ elif mode == "스트리머별":
     st.subheader("스트리머별")
     # 스트리머 선택
     streamers = chat_counts["streamer_id"].unique()
-    selected_streamer = st.selectbox("스트리머 선택", streamers)
+    selected_streamer = st.selectbox("스트리머 선택", streamers, format_func=lambda x: streamer_map.get(x, x))
 
     # 데이터 필터링
     df_counts = chat_counts[chat_counts["streamer_id"] == selected_streamer]
@@ -96,7 +106,7 @@ elif mode == "스트리머별":
 
     if os.path.exists(fpath):
         img = Image.open(fpath)
-        st.image(img, caption=f"{selected_streamer} WordCloud", use_container_width=True)
+        st.image(img, use_container_width=True)
         img.close()
     else:
         st.warning("Don't have wordcloud png")
