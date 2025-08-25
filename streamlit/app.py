@@ -50,6 +50,21 @@ if mode == "전체 스트리머":
     unique_per_streamer = unique_users.groupby("streamer_id")["unique_users"].sum()
     st.bar_chart(unique_per_streamer)
 
+    # 스트리머별 유사도
+    st.subheader("스트리머별 유사도")
+    wordcloud_dir = "../notebook/streamer_map"
+    fname = f"streamer_map.png"
+    fpath = os.path.join(wordcloud_dir, fname)
+    if os.path.exists(fpath):
+        img = Image.open(fpath)
+        st.image(img, caption=f"streamer_map", use_container_width=True)
+        img.close()
+    else:
+        st.warning("Don't have streamer_map png")
+
+    st.session_state.clear()
+    gc.collect()
+
 elif mode == "스트리머별":
     st.subheader("스트리머별")
     # 스트리머 선택
