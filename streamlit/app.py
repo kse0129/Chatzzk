@@ -184,8 +184,6 @@ if mode == "전체 스트리머":
 # 스트리머별
 # ==============================
 else:
-    section("스트리머별 분석", level=3)
-
     # 선택
     streamers = chat_counts["streamer_id"].unique()
     selected = st.selectbox("스트리머 선택", sorted(streamers.tolist()), format_func=lambda x: streamer_map.get(x, x))
