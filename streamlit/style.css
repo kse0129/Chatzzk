@@ -1,0 +1,32 @@
+/* 배경 색상 */
+[data-testid="stAppViewContainer"] {
+    background-color: #000000;
+    color: #FFFFFF;
+}
+
+/* 사이드바 */
+[data-testid="stSidebar"], [data-testid="stToolbar"] {
+    background-color: #111111;
+    color: #FFFFFF;
+}
+
+/* big number metric */
+div[data-testid="stMetricValue"] {
+    color: #00FF85; /* 치지직 포인트 컬러 */
+    font-weight: bold;
+}
+
+/* 차트 배경 */
+.css-1aumxhk, .stPlotlyChart {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+}
+
+/* 타이틀 */
+h1, h2, h3, h4, h5, h6 {
+    color: #E0E0E0 !important;
+}
+
+p {
+    color: #E0E0E0 !important;
+}
