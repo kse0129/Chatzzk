@@ -1,6 +1,4 @@
 import os
-from typing import List
-
 import altair as alt
 import pandas as pd
 import psycopg2
@@ -9,9 +7,7 @@ import json
 from PIL import Image
 from config.settings import *
 
-# ==============================
-# 글로벌 설정
-# ==============================
+# 기본 설정
 PAGE_TITLE = "Chatzzk"
 THEME_BG = "#000000"
 THEME_FG = "#FFFFFF"
@@ -20,6 +16,7 @@ THEME_MUTED = "#115926"
 CHART_W = 350
 CHART_H = 250
 
+# Streamlit 페이지 설정
 st.set_page_config(page_title=PAGE_TITLE, layout="wide", initial_sidebar_state="expanded")
 
 # CSS
@@ -42,31 +39,26 @@ def _chzzk_dark():
             "view": {"stroke": "transparent"},
         }
     }
-
 alt.themes.register("chzzk_dark", _chzzk_dark)
 alt.themes.enable("chzzk_dark")
 
+# 스트리머 ID, 이름 목록
 with open("config/streamer_list.json", "r", encoding="utf-8") as f:
     streamer_list = json.load(f)
 
 streamer_map = {s["id"]: s["name"] for s in streamer_list}
 
-def map_id2name(table):
-    table.index = table.index.map(lambda x: streamer_map.get(x, x))
-    return table
-
-# ==============================
-# 공통 유틸
-# ==============================
+# 데이터 로딩
 @st.cache_data
-def load_view(view_name: str) -> pd.DataFrame:
+def load_view(view_name):
     """Postgres 뷰 전체 로드"""
     with psycopg2.connect(
         host=PG_HOST, port=PG_PORT, dbname=PG_DB, user=PG_USER, password=PG_PASS
     ) as conn:
         return pd.read_sql(f"SELECT * FROM {view_name};", conn)
 
-def chart_line(df: pd.DataFrame, x: str, y: str, title: str = "") -> alt.Chart:
+# line 차트
+def chart_line(df, x, y, title):
     return (
         alt.Chart(df, title=title)
         .mark_line()
@@ -78,7 +70,8 @@ def chart_line(df: pd.DataFrame, x: str, y: str, title: str = "") -> alt.Chart:
         .configure_mark(color=THEME_ACCENT)
     )
 
-def chart_bar(df: pd.DataFrame, x: str, y: str, title: str = "") -> alt.Chart:
+# bar 차트
+def chart_bar(df, x, y, title=""):
     return (
         alt.Chart(df, title=title)
         .mark_bar()
@@ -90,7 +83,8 @@ def chart_bar(df: pd.DataFrame, x: str, y: str, title: str = "") -> alt.Chart:
         .configure_mark(color=THEME_ACCENT)
     )
 
-def chart_area_stacked(df: pd.DataFrame, x: str, y_fields: List[str], title: str = "") -> alt.Chart:
+# 영역 차트
+def chart_area_stacked(df, x, y_fields, title=""):
     m = df.melt(id_vars=[x], value_vars=y_fields, var_name="group", value_name="value")
     return (
         alt.Chart(m, title=title)
@@ -104,31 +98,25 @@ def chart_area_stacked(df: pd.DataFrame, x: str, y_fields: List[str], title: str
         .properties(width=CHART_W, height=CHART_H)
     )
 
-def section(title: str, level: int = 4) -> None:
+# 섹션 제목
+def section(title, level=4):
     st.markdown(f"{'#' * level} {title}")
 
-# ==============================
-# 데이터 로딩
-# ==============================
+# 뷰테이블 로딩
 chat_counts = load_view("chat_counts_per_streamer")
 unique_users = load_view("unique_users_per_streamer")
 chat_by_hour = load_view("chat_counts_by_hour")
 user_activity = load_view("user_activity_per_streamer")
 chat_length = load_view("chat_length_distribution")
 
-# ==============================
-# UI
-# ==============================
+# Streamlit UI
 st.title("Chzzk 채팅 데이터 대시보드")
-
 st.sidebar.header("메뉴")
 mode = st.sidebar.radio("보기", ["전체 스트리머", "스트리머별"])
 
-# ==============================
-# 전체 스트리머
-# ==============================
+# 전체 스트리머 페이지
 if mode == "전체 스트리머":
-    # 상단 요약 (스트리머 수 제외, 스트리머별과 동일 포맷)
+    # 상단 number 차트
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("총 채팅 수", f"{chat_counts['msg_count'].sum():,}")
     col2.metric("총 유저 수", f"{unique_users['unique_users'].sum():,}")
@@ -180,22 +168,20 @@ if mode == "전체 스트리머":
             use_container_width=True,
         )
 
-# ==============================
-# 스트리머별
-# ==============================
+# 스트리머별 페이지
 else:
-    # 선택
+    # 스트리머 선택
     streamers = chat_counts["streamer_id"].unique()
     selected = st.selectbox("스트리머 선택", sorted(streamers.tolist()), format_func=lambda x: streamer_map.get(x, x))
 
-    # 필터
+    # 데이터 필터링
     df_counts = chat_counts[chat_counts["streamer_id"] == selected].copy()
     df_users = unique_users[unique_users["streamer_id"] == selected].copy()
     df_hour = chat_by_hour[chat_by_hour["streamer_id"] == selected].copy()
     df_activity = user_activity[user_activity["streamer_id"] == selected].copy()
     df_length = chat_length[chat_length["streamer_id"] == selected].copy()
 
-    # 상단 요약 (동일 포맷)
+    # 상단 number 차트
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("총 채팅 수", f"{df_counts['msg_count'].sum():,}")
     col2.metric("총 유저 수", f"{df_users['unique_users'].sum():,}")
@@ -246,4 +232,3 @@ else:
             chart_area_stacked(df_plot, "chat_date", ["Top 10", "Others"], "참여 집중도 (Top 10 vs Others)"),
             use_container_width=True,
         )
-
