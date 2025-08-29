@@ -12,7 +12,7 @@
 
 /* big number metric */
 div[data-testid="stMetricValue"] {
-    color: #00FF85; /* 치지직 포인트 컬러 */
+    color: #00FF88;
     font-weight: bold;
 }
 
@@ -22,11 +22,12 @@ div[data-testid="stMetricValue"] {
     color: #FFFFFF !important;
 }
 
-/* 타이틀 */
+/* 섹션 제목 */
 h1, h2, h3, h4, h5, h6 {
     color: #E0E0E0 !important;
 }
 
+/* 차트 제목 */
 p {
     color: #E0E0E0 !important;
 }
