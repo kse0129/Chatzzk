@@ -12,22 +12,27 @@ from google.cloud import pubsub_v1
 from google.cloud.pubsub_v1.types import BatchSettings, PublisherOptions
 from requests.exceptions import HTTPError
 
-
+# Google Cloud Pub/Sub 인증
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
+# 로깅 설정
 logging.basicConfig(
     level=LOG_LEVEL,
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 )
 logger = logging.getLogger("chzzk-pub")
 
+# 배치 설정
 batch_settings = BatchSettings(
     max_bytes=1_000_000,
     max_messages=1000,
     max_latency=0.05
 )
+
+# 퍼블리셔 설정
 publisher_options = PublisherOptions(enable_message_ordering=False)
 
+# 퍼블리셔 초기화
 PUBLISHER = pubsub_v1.PublisherClient(
     batch_settings=batch_settings,
     publisher_options=publisher_options
@@ -51,6 +56,7 @@ class ChzzkChat:
         self.sock = None
         self.connect()
 
+    # 메시지 발행
     def _publish(self, payload: dict, attributes: dict):
         try:
             data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -68,6 +74,7 @@ class ChzzkChat:
         except Exception as e:
             self.logger.exception(f"publish exception: {e}")
 
+	# 채팅 연결
     def connect(self):
         self.chatChannelId = api.fetch_chatChannelId(self.streamer, self.cookies)
         self.accessToken, self.extraToken = api.fetch_accessToken(self.chatChannelId, self.cookies)
@@ -117,6 +124,7 @@ class ChzzkChat:
         else:
             raise ValueError("오류 발생")
 
+	# 메시지 전송
     def send(self, message: str):
         default_dict = {
             "ver": 2,
@@ -147,6 +155,7 @@ class ChzzkChat:
 
         self.sock.send(json.dumps(dict(send_dict, **default_dict)))
 
+	# 메시지 수신
     def run(self):
         while True:
             try:
@@ -169,6 +178,7 @@ class ChzzkChat:
 
                     continue
 
+				# 채팅 및 후원 메시지 처리
                 if chat_cmd == CHZZK_CHAT_CMD["chat"]:
                     chat_type = "채팅"
                 elif chat_cmd == CHZZK_CHAT_CMD["donation"]:
@@ -218,15 +228,18 @@ class ChzzkChat:
                 pass
 
 if __name__ == "__main__":
+	# 치지직 쿠키 로드
     with open(COOKIES_PATH, "r", encoding="utf-8") as f:
         cookies = json.load(f)
 
+	# 스트리머 목록 로드
     with open(STREAMER_LIST_PATH, "r", encoding="utf-8") as streamer_list_json:
         streamer_list = json.load(streamer_list_json)
 
     chzzkchat_list = []
     threads = []
 
+	# 스트리머별 채팅 수집기 생성
     for streamer in streamer_list:
         try:
             chzzkchat = ChzzkChat(
@@ -243,10 +256,12 @@ if __name__ == "__main__":
             logger.warning(f"스트리머 {streamer['id']} 초기화 실패: {e}")
             continue
 
+		# 채팅 수집기 목록에 추가
         chzzkchat_list.append(chzzkchat)
         t = threading.Thread(target=chzzkchat.run, name=f"chzzk-{streamer['name']}", daemon=True)
         threads.append(t)
         t.start()
 
+	# 스레드 종료 대기
     for t in threads:
         t.join()

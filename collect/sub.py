@@ -13,16 +13,17 @@ import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import Json
 
-
+# Google Cloud Pub/Sub 인증
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
 
+# 로깅 설정
 logging.basicConfig(
     level=LOG_LEVEL,
     format="%(asctime)s | %(levelname)s | %(message)s"
 )
 logger = logging.getLogger("chatzzk-sub")
 
-
+# 데이터베이스 연결 풀 초기화
 def init_db_pool():
     global pool
     dsn = f"host={PG_HOST} port={PG_PORT} dbname={PG_DB} user={PG_USER} password={PG_PASS}"
@@ -35,7 +36,7 @@ def init_db_pool():
     finally:
         pool.putconn(conn)
 
-
+# UTC로 변환
 def _to_datetime_utc(val):
     if val is None:
         return datetime.now(tz=timezone.utc)
@@ -51,7 +52,7 @@ def _to_datetime_utc(val):
             return datetime.now(tz=timezone.utc)
     return datetime.now(tz=timezone.utc)
 
-
+# 메시지 파싱
 def parse_message(message):
     fields = {
         "message_id": getattr(message, "message_id", None),
@@ -79,18 +80,21 @@ def parse_message(message):
                 return c
         return default
 
+	# 스트리머 ID 추출
     fields["streamer_id"] = pick(
         payload.get("streamer_id") if isinstance(payload, dict) else None,
         attrs.get("streamer_id"),
         default="unknown_streamer",
     )
 
+	# 사용자 ID 추출
     fields["user_id"] = pick(
         (payload.get("user_id") if isinstance(payload, dict) else None),
         attrs.get("user_id"),
         default=None,
     )
 
+	# 채팅 내용 추출
     fields["msg"] = pick(
         (payload.get("msg") if isinstance(payload, dict) else None),
         (payload.get("message") if isinstance(payload, dict) else None),
@@ -98,18 +102,21 @@ def parse_message(message):
         default="",
     )
 
+	# 타임스탬프 추출
     ts_candidate = pick(
         (payload.get("ts") if isinstance(payload, dict) else None),
         attrs.get("ts"),
         getattr(message, "publish_time", None),
         default=None,
     )
+
+	# 타임스탬프 변환
     fields["ts"] = _to_datetime_utc(ts_candidate)
     fields["raw"] = payload if isinstance(payload, dict) else {"data": text, "attributes": dict(attrs)}
 
     return fields
 
-
+# DB 저장 콜백 함수
 def callback(message):
     global pool
     try:
@@ -145,7 +152,7 @@ def callback(message):
         except Exception:
             pass
 
-
+# 종료 처리
 def shutdown(signum=None, frame=None):
     global streaming_pull_future, subscriber, pool
     try:
@@ -169,12 +176,15 @@ def main():
     global subscriber, streaming_pull_future
     init_db_pool()
 
+	# Subscriber 초기화
     subscriber = pubsub_v1.SubscriberClient()
     streaming_pull_future = subscriber.subscribe(SUBSCRIPTION_PATH, callback=callback)
 
+	# 종료 신호 처리
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
+	# Subscriber 시작
     with subscriber:
         try:
             streaming_pull_future.result()
